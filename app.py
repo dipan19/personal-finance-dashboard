@@ -98,6 +98,22 @@ st.markdown(f"""
         a:hover {{
             text-decoration: underline;
         }}
+
+        /* Bigger fonts for section headers */
+        .section-header {{
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }}
+
+        /* Bigger fonts for subheaders */
+        .subheader {{
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }}
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -115,8 +131,7 @@ st.markdown("""
         color: #ffffff;
         font-weight: 700;
         font-size: 2rem;
-        white-space: nowrap;  /* prevents line breaks */
-        overflow-x: auto;     /* allows scrolling if too long */
+        white-space: nowrap;
     ">
         💰 Dipan's Personal Finance Dashboard
     </div>
@@ -136,92 +151,97 @@ st.markdown("""
 total_value = 0
 
 # -------------------- Stocks --------------------
-st.header("📈 Stocks")
-st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
-stock_total = 0
+with st.expander("", expanded=True):
+    st.markdown('<h2 class="section-header">📈 Stocks</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+    stock_total = 0
 
-for alias, qty in portfolio["stocks"].items():
-    symbol = stock_aliases.get(alias, alias)
-    price = get_stock_price(symbol)
-    url = stock_urls.get(alias, None)
+    for alias, qty in portfolio["stocks"].items():
+        symbol = stock_aliases.get(alias, alias)
+        price = get_stock_price(symbol)
+        url = stock_urls.get(alias, None)
 
-    if price:
-        value = price * qty
-        stock_total += value
-        if url:
+        if price:
+            value = price * qty
+            stock_total += value
+            if url:
+                st.markdown(
+                    f'<div class="pulse-hover"><b><a href="{url}" target="_blank">{alias}</a></b>: ₹{value:,.2f} (Qty: {qty}, Price: ₹{price:.2f})</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(
+                    f'<div class="pulse-hover"><b>{alias}</b>: ₹{value:,.2f} (Qty: {qty}, Price: ₹{price:.2f})</div>',
+                    unsafe_allow_html=True,
+                )
+        else:
+            st.warning(f"⚠️ Failed to fetch price for {symbol}")
+
+    st.markdown(f'<div class="subheader"><b>Total Stock Value:</b> ₹{stock_total:,.2f}</div>', unsafe_allow_html=True)
+    total_value += stock_total
+
+# -------------------- Mutual Funds --------------------
+with st.expander("", expanded=True):
+    st.markdown('<h2 class="section-header">💼 Mutual Funds</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+    mf_total = 0
+
+    for alias, units in portfolio["mutual_funds"].items():
+        scheme_code = mutual_fund_aliases.get(alias, alias)
+        nav = get_amfi_nav(str(scheme_code))
+        if nav:
+            value = nav * units
+            mf_total += value
             st.markdown(
-                f'<div class="pulse-hover"><b><a href="{url}" target="_blank">{alias}</a></b>: ₹{value:,.2f} (Qty: {qty}, Price: ₹{price:.2f})</div>',
+                f'<div class="pulse-hover"><b>{alias} (Scheme: {scheme_code})</b>: ₹{value:,.2f} (Units: {units}, NAV: ₹{nav:.2f})</div>',
                 unsafe_allow_html=True,
             )
         else:
-            st.markdown(
-                f'<div class="pulse-hover"><b>{alias}</b>: ₹{value:,.2f} (Qty: {qty}, Price: ₹{price:.2f})</div>',
-                unsafe_allow_html=True,
-            )
-    else:
-        st.warning(f"⚠️ Failed to fetch price for {symbol}")
+            st.warning(f"⚠️ Failed to fetch NAV for scheme code {scheme_code}")
 
-st.subheader(f"**Total Stock Value:** ₹{stock_total:,.2f}")
-total_value += stock_total
-
-# -------------------- Mutual Funds --------------------
-st.header("💼 Mutual Funds")
-st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
-mf_total = 0
-
-for alias, units in portfolio["mutual_funds"].items():
-    scheme_code = mutual_fund_aliases.get(alias, alias)
-    nav = get_amfi_nav(str(scheme_code))
-    if nav:
-        value = nav * units
-        mf_total += value
-        st.markdown(
-            f'<div class="pulse-hover"><b>{alias} (Scheme: {scheme_code})</b>: ₹{value:,.2f} (Units: {units}, NAV: ₹{nav:.2f})</div>',
-            unsafe_allow_html=True,
-        )
-    else:
-        st.warning(f"⚠️ Failed to fetch NAV for scheme code {scheme_code}")
-
-st.subheader(f"**Total Mutual Fund Value:** ₹{mf_total:,.2f}")
-total_value += mf_total
+    st.markdown(f'<div class="subheader"><b>Total Mutual Fund Value:</b> ₹{mf_total:,.2f}</div>', unsafe_allow_html=True)
+    total_value += mf_total
 
 # -------------------- PPF --------------------
-st.header("🏦 Public Provident Fund (PPF)")
-st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
-ppf = portfolio.get("ppf_balance", 0)
-st.markdown(
-    f'<div class="pulse-hover"><b>PPF Balance:</b> ₹{ppf:,.2f}</div>',
-    unsafe_allow_html=True,
-)
-total_value += ppf
-
-# -------------------- Savings Accounts --------------------
-st.header("🏦 Savings Accounts")
-st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
-savings_total = sum(portfolio.get("savings_accounts", {}).values())
-
-for name, amount in portfolio["savings_accounts"].items():
+with st.expander("", expanded=True):
+    st.markdown('<h2 class="section-header">🏦 Public Provident Fund (PPF)</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+    ppf = portfolio.get("ppf_balance", 0)
     st.markdown(
-        f'<div class="pulse-hover">{name}: ₹{amount:,.2f}</div>',
+        f'<div class="pulse-hover"><b>PPF Balance:</b> ₹{ppf:,.2f}</div>',
         unsafe_allow_html=True,
     )
+    st.markdown(f'<div class="subheader"><b>Total PPF Account Balance:</b> ₹{ppf:,.2f}</div>', unsafe_allow_html=True)
+    total_value += ppf
 
-st.subheader(f"**Total Savings:** ₹{savings_total:,.2f}")
-total_value += savings_total
+# -------------------- Savings Accounts --------------------
+with st.expander("", expanded=True):
+    st.markdown('<h2 class="section-header">🏧 Savings Accounts</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+    sa_total = 0
 
-# -------------------- Net Worth Summary --------------------
+    for bank, balance in portfolio.get("savings_accounts", {}).items():
+        sa_total += balance
+        st.markdown(
+            f'<div class="pulse-hover"><b>{bank}:</b> ₹{balance:,.2f}</div>',
+            unsafe_allow_html=True,
+        )
+    st.markdown(f'<div class="subheader"><b>Total Savings Account Balance:</b> ₹{sa_total:,.2f}</div>', unsafe_allow_html=True)
+    total_value += sa_total
+
+# -------------------- Total Net Worth --------------------
 st.markdown("---")
 st.markdown(f"""
     <div style="
         backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.3);
-        padding: 1rem;
-        border-radius: 10px;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
         text-align: center;
-        font-size: 2.5rem;
-        font-weight: bold;
+        font-size: 2rem;
+        font-weight: 700;
         color: #ffffff;
-        margin-bottom: 0.5rem;
+        margin-bottom: 1rem;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     ">
         🧾 Total Net Worth
@@ -231,10 +251,10 @@ st.markdown(f"""
         width: 100%;
         backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.3);
-        padding: 1rem;
-        border-radius: 10px;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
         text-align: center;
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         font-weight: bold;
         color: #ffffff;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);

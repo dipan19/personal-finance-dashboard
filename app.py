@@ -16,7 +16,7 @@ stock_urls = {
     "Bajaj Hind": "https://www.moneycontrol.com/india/stockpricequote/sugar/bajajhindusthansugar/BH06",
     "Jindal Saw": "https://www.moneycontrol.com/india/stockpricequote/steel-tubespipes/jindalsaw/JS08",
     "Gateway": "https://www.moneycontrol.com/india/stockpricequote/miscellaneous/gatewaydistriparks/GD01",
-    "Alkylamine": "https://www.moneycontrol.com/india/stockpricequote/chemicals/alkylamineschemicals/AAC",
+    "Suzlon": "https://www.moneycontrol.com/india/stockpricequote/power-generationdistribution/suzlonenergy/SE17",
     "IFCI": "https://www.moneycontrol.com/india/stockpricequote/finance-term-lending-institutions/ifci/IFC02",
     "IREDA": "https://www.moneycontrol.com/india/stockpricequote/power-generationdistribution/indianrenewableenergydevelopmentagency/IREDAL",
     "BF Utilities": "https://www.moneycontrol.com/india/stockpricequote/power-generationdistribution/bfutilities/BFU",

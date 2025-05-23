@@ -4,7 +4,7 @@
     "Bajaj Hind": 40,
     "Jindal Saw": 4,
     "Gateway": 450,
-    "Alkylamine": 22,
+    "Suzlon": 808,
     "IFCI": 1079,
     "IREDA": 200,
     "BF Utilities": 45,
@@ -12,7 +12,7 @@
     "Morepen Labs": 650,
     "Genus Power": 325,
     "PSB": 1679,
-    "MRPL": 361,
+    "MRPL": 535,
     "Triturbine": 95,
     "ACE": 58,
     "Tejas Net": 38,
@@ -27,7 +27,7 @@
     "Bajaj Hind": "BAJAJHIND.NS",
     "Jindal Saw": "JINDALSAW.NS",
     "Gateway": "GATEWAY.NS",
-    "Alkylamine": "ALKYLAMINE.NS",
+    "Suzlon": "SUZLON.NS",
     "IFCI": "IFCI.NS",
     "IREDA": "IREDA.NS",
     "BF Utilities": "BFUTILITIE.NS",
@@ -68,7 +68,7 @@
     "State Bank of India": 405742,
     "Axis Bank": 17108,
     "Bank of Baroda": 360108,
-    "Zerodha fund": 50151
+    "Zerodha fund": 15101.26
   },
   "ppf_balance": 54938
 }

@@ -1,0 +1,174 @@
+import streamlit as st
+import json
+import base64
+from utils import get_stock_price, get_amfi_nav
+
+# Load portfolio config
+with open("portfolio_config.json") as f:
+    portfolio = json.load(f)
+
+stock_aliases = portfolio.get("stock_aliases", {})
+mutual_fund_aliases = portfolio.get("mutual_fund_aliases", {})
+
+# Load and encode background image
+with open("your_background.jpg", "rb") as img_file:
+    img_base64 = base64.b64encode(img_file.read()).decode()
+
+# Set page config
+st.set_page_config(page_title="Net Worth Dashboard", layout="wide")
+
+# Inject CSS
+st.markdown(f"""
+    <style>
+        html, body, [data-testid="stAppViewContainer"] {{
+            background-image: url("data:image/png;base64,{img_base64}");
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-position: center;
+        }}
+
+        [data-testid="stAppViewContainer"] > .main {{
+            backdrop-filter: blur(10px);
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem;
+            color: #ffffff;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }}
+
+        h1, h2, h3, h4, p, .stMarkdown, .stAlert, .stText {{
+            color: #ffffff !important;
+        }}
+
+        [data-testid="stSidebar"] > div:first-child {{
+            backdrop-filter: blur(8px);
+            background-color: rgba(30, 30, 30, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+        }}
+
+        .separator {{
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+        }}
+
+        .pulse-hover {{
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            display: inline-block;
+        }}
+
+        .pulse-hover:hover {{
+            transform: scale(1.05);
+            opacity: 0.95;
+        }}
+    </style>
+""", unsafe_allow_html=True)
+
+# App content
+st.title("💰 Dipan's Personal Finance Dashboard")
+st.markdown("Live tracking of my net worth: **Stocks**, **Mutual Funds**, **PPF**, and **Savings Accounts**.")
+
+total_value = 0
+
+# -------------------- Stocks --------------------
+st.header("📈 Stocks")
+st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+stock_total = 0
+
+for alias, qty in portfolio["stocks"].items():
+    symbol = stock_aliases.get(alias, alias)
+    price = get_stock_price(symbol)
+    if price:
+        value = price * qty
+        stock_total += value
+        st.markdown(
+            f'<div class="pulse-hover"><b>{alias} ({symbol})</b>: ₹{value:,.2f} (Qty: {qty}, Price: ₹{price:.2f})</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.warning(f"⚠️ Failed to fetch price for {symbol}")
+
+st.subheader(f"**Total Stock Value:** ₹{stock_total:,.2f}")
+total_value += stock_total
+
+# -------------------- Mutual Funds --------------------
+st.header("💼 Mutual Funds")
+st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+mf_total = 0
+
+for alias, units in portfolio["mutual_funds"].items():
+    scheme_code = mutual_fund_aliases.get(alias, alias)
+    nav = get_amfi_nav(str(scheme_code))
+    if nav:
+        value = nav * units
+        mf_total += value
+        st.markdown(
+            f'<div class="pulse-hover"><b>{alias} (Scheme: {scheme_code})</b>: ₹{value:,.2f} (Units: {units}, NAV: ₹{nav:.2f})</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.warning(f"⚠️ Failed to fetch NAV for scheme code {scheme_code}")
+
+st.subheader(f"**Total Mutual Fund Value:** ₹{mf_total:,.2f}")
+total_value += mf_total
+
+# -------------------- PPF --------------------
+st.header("🏦 Public Provident Fund (PPF)")
+st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+ppf = portfolio.get("ppf_balance", 0)
+st.markdown(
+    f'<div class="pulse-hover"><b>PPF Balance:</b> ₹{ppf:,.2f}</div>',
+    unsafe_allow_html=True,
+)
+total_value += ppf
+
+# -------------------- Savings Accounts --------------------
+st.header("🏦 Savings Accounts")
+st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+savings_total = sum(portfolio.get("savings_accounts", {}).values())
+
+for name, amount in portfolio["savings_accounts"].items():
+    st.markdown(
+        f'<div class="pulse-hover">{name}: ₹{amount:,.2f}</div>',
+        unsafe_allow_html=True,
+    )
+
+st.subheader(f"**Total Savings:** ₹{savings_total:,.2f}")
+total_value += savings_total
+
+# -------------------- Net Worth Summary --------------------
+st.markdown("---")
+st.markdown(f"""
+    <div style="
+        backdrop-filter: blur(10px);
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffffff;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    ">
+        🧾 Total Net Worth
+    </div>
+    <div class="pulse-hover" style="
+        display: inline-block;
+        width: 100%;
+        backdrop-filter: blur(10px);
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffffff;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    ">
+        ₹{total_value:,.2f}
+    </div>
+""", unsafe_allow_html=True)
